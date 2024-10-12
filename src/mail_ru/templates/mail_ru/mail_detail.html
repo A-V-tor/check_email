@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали письма</title>
+</head>
+<body>
+    <h1>Детали письма</h1>
+
+    <h2>Тема: {{ mail.theme }}</h2>
+    <p><strong>Дата получения:</strong> {{ mail.date_receipt }}</p>
+    <p><strong>Текст сообщения:</strong></p>
+    <p>{{ mail.body }}</p>
+
+    <h3>Вложения:</h3>
+    {% if attachments %}
+        <ul>
+            {% for attachment in attachments %}
+                <li>{{ attachment.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Нет вложений</p>
+    {% endif %}
+
+    <a href="{% url 'mail_list' %}">Вернуться к списку писем</a>
+</body>
+</html>

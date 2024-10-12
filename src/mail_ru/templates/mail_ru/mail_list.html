@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список писем</title>
+</head>
+<body>
+    <h1>Список писем</h1>
+
+    <ul>
+        {% for mail in mails %}
+            <li>
+                ID: {{ mail.id }} <!-- Отображение ID письма -->
+                <a href="{% url 'mail_detail' mail.pk %}">{{ mail.theme }}</a> - {{ mail.date_receipt }}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

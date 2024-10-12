@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Email Checker</title>
+    <style>
+        table, th, td {
+            border: 1px solid black; /* Устанавливаем границу для таблицы, заголовков и ячеек */
+            border-collapse: collapse; /* Чтобы границы не дублировались */
+        }
+        th, td {
+            padding: 8px; /* Отступ внутри ячеек */
+            text-align: left; /* Выравнивание текста по левому краю */
+        }
+    </style>
+</head>
+<body>
+    <h1>Email Checker</h1>
+    <div id="progress-container" style="width: 100%; border: 1px solid #000;">
+        <div id="progress-bar" style="width: 0%; height: 30px; background-color: green;"></div>
+    </div>
+    <div id="message"></div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Дата</th>
+            <th>Сообщение</th>
+            <th>Subject</th>
+        </tr>
+        </thead>
+        <tbody id="table-body">
+
+        </tbody>
+    </table>
+
+    <script>
+        const username = prompt("Ваше имя пользователя:");
+        const password = prompt("Ваш пароль:");
+
+        if (!username || !password) {
+            alert("Имя пользователя и пароль обязательны!");
+            throw new Error("Необходимо ввести имя пользователя и пароль.");
+        }
+
+
+        const progressBar = document.getElementById('progress-bar');
+        const messageDiv = document.getElementById('message');
+        const tableBody = document.getElementById('table-body');
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const socket = new WebSocket(protocol + '//' + window.location.host + '/ws/mail_checker/');
+
+        // отправить имя и пароль на сервер после открытия соединения
+        socket.onopen = function() {
+            const credentials = {
+                username: username,
+                password: password
+            };
+            socket.send(JSON.stringify(credentials));
+        };
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            progressBar.style.width = data.progress + '%';
+            messageDiv.textContent = data.message;
+
+            // обрезать данные
+            let truncatedMessage = data.text_message;
+            if (truncatedMessage.length > 100) {
+                truncatedMessage = truncatedMessage.substring(0, 1000) + '...';
+            }
+
+            let truncateSubject = data.subject;
+            if (truncateSubject.length > 20) {
+                truncateSubject = truncateSubject.substring(0, 20) + '...';
+            }
+
+            // добавить в таблицу
+            const newRow = `
+                <tr>
+                    <td>${data.id}</td>
+                    <td>${data.sent_date}</td>
+                    <td>${truncatedMessage}</td>
+                    <td>${truncateSubject}</td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', newRow);
+        };
+
+        socket.onclose = function(e) {
+            console.error(e);
+        };
+    </script>
+</body>
+</html>
